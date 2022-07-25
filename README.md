@@ -17,7 +17,7 @@ The code  starts by accumelating event_data CSV files into all_event_data.csv wh
 This project makes the folowing assumptions:
 
 -   Python 3 is available
--   `cassandra` are available
+-   `cassandra` and `pandas` are available
 - 
 ## Running the Python Jupyter notebook
 
@@ -30,9 +30,12 @@ Open the data_modeling.ipynb and running each code block
 
 <img src="images/image_all_event_data.jpg" alt="denormalize data in all_event_data.csv"  width="800"/>
 
- ### Table1
-##### Query1:
-- Give me the `artist`, `song title` and `song's length` in the music app history that was heard during  `sessionId = 338`, and `itemInSession  = 4`
+### Table1
+#####  Question1:
+- **Give me the `artist`, `song title` and `song's length` in the music app history that was heard during  `sessionId = 338`, and `itemInSession  = 4`**
+
+**Since we are working with the NoSQL database we need to think about the queries we want to perform on the data, In this question, we are asked to retrieve the (artist, song title, song's length) from data based on specific sessionId and itemInSession. we can specify (sessionId and itemInSession) as our primary key as it can uniquely identify each row and
+we need to filter the data based on them and we can add the rest of the information of the query as table columns and our table will look like this:**
 ```
 Table Name: sessions
 	column 1: sessionId
@@ -43,8 +46,10 @@ Table Name: sessions
 	PRIMARY KEY(SessionId,itemInSession)
 ```
 ### Table2
-##### Query2:
-- Give me only the following: `name of artist`, `song` (`sorted by itemInSession`) and `user` (`first` and `last` name) for `userid` = 10, `sessionid` = 182
+#####  Question2:
+- **Give me only the following: `name of artist`, `song` (`sorted by itemInSession`) and `user` (`first` and `last` name) for `userid` = 10, `sessionid` = 182**
+
+**In this question, we are asked to retrieve (artist name, song title (sorted by itemInSession), and user name) for a specific userId and sessionId, best way to partition this information is by using (userId & sessionId) as a composite primary key to make sure they partitioned together and adding itemInSession as a clustering column to sort the data. and the table has to include the artist name, song title, and user name as well, so the second table may look like this**
 
 
 ```
@@ -55,12 +60,13 @@ Table Name: users
 	Column 4: artist
 	Column 5: song
 	Column 6: userName
-	PRIMARY KEY(userId,sessionId,itemInSession)
+	PRIMARY KEY((userId, sessionId), ItemInSession))
 ```
 ### Table3
-##### Query3:
+#####  Question3:
+- **Give me every `user name` (first and last) in my music app history who listened to the `song` 'All Hands Against His Own'**
 
-- Give me every `user name` (first and last) in my music app history who listened to the `song` 'All Hands Against His Own'
+**Here we are asked to retrieve the name of the user that listened to a specific song title. since song title is our filtering column we use it as a primary key, but if used solely it may have duplicated records to solve that we can add userId to ensure the uniqueness of each row.**
 
 
 
@@ -68,8 +74,7 @@ Table Name: users
 Table Name: songs
 	column 1: song
 	column 2: userId
-	column 3: sessionId
-	Column 4: user_name
+	Column 3: user_name
 	PRIMARY KEY(song, userId, sessionId)
 ```
 
